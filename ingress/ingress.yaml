@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: Cluster-Ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - hosts:
+    - myapp.com
+    secretName: secret-tls  
+  rules:
+    - host: myapp.com
+      http:
+        paths:
+        - path: /grafana
+          backend:
+            service:
+              name: ..-service
+              port: 
+                number: 80
+        - path: /timescale
+          backend:
+            service:
+              name: ..-service
+              port: 
+                number: 5432
+          

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: 
+  name: timescale
+  namespace: default
+  labels:
+    app: timescale
+    container: timescale
+spec:
+  selector:
+    matchLabels:
+      app: timescale
+      container: timescale
+  serviceName: timescale
+  template:
+    metadata:
+      labels:
+        app: timescale
+        container: timescale
+    spec:
+      containers:
+        - name: timescale
+          image: timescale/timescaledb:latest-pg16
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name:  timescale-pvc
+              mountPath:  /var/lib/postgresql/data
+              subPath: pgdata
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 5
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 10
+            periodSeconds: 10
+  volumeClaimTemplates:
+    - metadata:
+        name: timescale-pvc
+      spec: 
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:  
+          requests:
+            storage: 1Gi
